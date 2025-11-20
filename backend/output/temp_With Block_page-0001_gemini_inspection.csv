@@ -1,0 +1,36 @@
+Serial No,Description,Welding Type,Welding Value,Remarks,Position,Confidence
+W1,Weld between PIPE 60.3x3.6 1 and part 9,"Fillet Weld, All Around",4,TYP,"Top left of ELEVATION VIEW, connecting the pipe to the end cap.",High
+W2,Weld between the top flange and vertical stiffener 4,Double Fillet Weld,5,"TYP, M","Top of the beam in ELEVATION VIEW, connecting stiffener 4 to the top flange.",High
+W3,Weld between the top flange and web plate PL10 21,Double Fillet Weld,6.3,OF DRIVE TYP,"Top of the beam in ELEVATION VIEW, connecting web plate PL10 21 to the top flange in the drive area.",High
+W4,Weld between the top flange and vertical stiffener 28,Double Fillet Weld,5,"TYP, M","Top of the beam in ELEVATION VIEW, connecting stiffener 28 to the top flange.",High
+W5,Weld between the top flange and vertical stiffener 26,Double Fillet Weld,4,OF MOTOR,"Top of the beam in ELEVATION VIEW, connecting stiffener 26 to the top flange in the motor area.",High
+W6,Weld between the top flange and end plate 3,Double Fillet Weld,3,,"Top right of ELEVATION VIEW, connecting the top flange to the end plate 3.",High
+W7,Weld between PIPE 60.3x3.6 1 and part 9,"Fillet Weld, All Around",4,,"Top right of ELEVATION VIEW, connecting the pipe to the end cap.",High
+W8,Weld between the bottom flange and end plate 7,Double Fillet Weld,3,,"Bottom left of ELEVATION VIEW, connecting the bottom flange to the end plate 7.",High
+W9,Weld between the bottom flange and web plate PL10 22,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 22 to the bottom flange.",High
+W10,Weld between the bottom flange and web plate PL10 16,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 16 to the bottom flange.",High
+W11,Weld between the bottom flange and web plate PL10 17,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 17 to the bottom flange.",High
+W12,Weld between the bottom flange and web plate PL10 20,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 20 to the bottom flange.",High
+W13,Weld between the bottom flange and web plate PL10 14,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 14 to the bottom flange.",High
+W14,Weld between the bottom flange and web plate PL10 18,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 18 to the bottom flange.",High
+W15,Weld between the bottom flange and web plate PL10 23,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 23 to the bottom flange.",High
+W16,Weld between the bottom flange and web plate PL10 15,Double Fillet Weld,8,"TYP, M","Bottom of the beam in ELEVATION VIEW, connecting web plate PL10 15 to the bottom flange.",High
+W17,Weld between the bottom flange and end plate 3,Double Fillet Weld,3,,"Bottom right of ELEVATION VIEW, connecting the bottom flange to the end plate 3.",High
+W18,Weld between web plate PL10 22 and vertical stiffener 24,Double Fillet Weld,3,,"Left side of ELEVATION VIEW, connecting stiffener 24 to the web plate PL10 22.",High
+W19,Weld between web plate PL10 16 and gusset plate 11,Double Fillet Weld,6,,"Center of ELEVATION VIEW, connecting gusset 11 to web plate PL10 16.",High
+W20,Weld between web plate PL10 20 and gusset plate 11,Double Fillet Weld,6,,"Center of ELEVATION VIEW, connecting gusset 11 to web plate PL10 20.",High
+W21,Weld between web plate PL10 17 and gusset plate 11,Double Fillet Weld,6,,"Center of ELEVATION VIEW, connecting gusset 11 to web plate PL10 17.",High
+W22,Weld between web plate PL10 14 and gusset plate 11,Double Fillet Weld,6,,"Center of ELEVATION VIEW, connecting gusset 11 to web plate PL10 14.",High
+W23,Weld between web plate PL10 18 and stiffener 2,Double Fillet Weld,6.3,,"Right side of ELEVATION VIEW, connecting stiffener 2 to web plate PL10 18.",High
+W24,Weld between web plate PL10 18 and stiffener 32,Double Fillet Weld,6.3,,"Right side of ELEVATION VIEW, connecting stiffener 32 to web plate PL10 18.",High
+W25,Weld between web plate PL10 15 and stiffener 2,Double Fillet Weld,6.3,,"Far right side of ELEVATION VIEW, connecting stiffener 2 to web plate PL10 15.",High
+W26,Weld between the bottom flange and gusset plate 13,Double Fillet Weld,6,,"Center of ELEVATION VIEW, connecting gusset 13 to the bottom flange.",High
+W27,Weld between the bottom flange and gusset plate 13,Double Fillet Weld,6,,"Center of ELEVATION VIEW, connecting gusset 13 to the bottom flange (second callout).",High
+W28,Weld between the top flange and web plate PL10 18,Double Fillet Weld,6.3,OF MOTOR,"Top of the beam in ELEVATION VIEW, connecting web plate PL10 18 to the top flange in the motor area.",High
+W29,Weld between the top flange and web plate PL10 15,Double Fillet Weld,6.3,,"Top of the beam in ELEVATION VIEW, connecting web plate PL10 15 to the top flange in the motor area.",High
+W30,Weld between the bottom flange and block 31,Double Fillet Weld,10,"TYP, M","Center of ELEVATION VIEW, connecting block 31 to the bottom flange.",High
+W31,Weld between the bottom flange and block 2,Double Fillet Weld,4,,"Center of ELEVATION VIEW, connecting block 2 to the bottom flange.",High
+W32,Weld between the bottom flange and block 2,Double Fillet Weld,4,,"Right side of ELEVATION VIEW, connecting block 2 to the bottom flange.",High
+W33,Weld between the top flange and vertical stiffener 24,Fillet Weld,3,TYP,"Top left of section view B11-B11. The TYP note indicates this is a typical weld, likely for both sides of the stiffener.",High
+W34,Weld between the bottom flange and gusset plate 22,Fillet Weld,6,TYP,"Bottom left of section view B11-B11. The TYP note indicates this is a typical weld, likely for both sides of the gusset.",High
+W35,Weld between the bottom flange and end plate PL8 7,Fillet Weld,6,TYP,"Bottom right of section view B11-B11. The TYP note indicates this is a typical weld, likely for both sides of the plate.",High

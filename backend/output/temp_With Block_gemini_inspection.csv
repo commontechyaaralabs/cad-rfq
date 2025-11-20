@@ -1,0 +1,45 @@
+Serial No,Description,Welding Type,Welding Value,Remarks,Position,Confidence
+W1,Weld between Part 7 and top flange of B11,Fillet Weld,4,TYP,"Top left of ELEVATION VIEW, on beam B11",High
+W2,Weld between Part 4 and top flange of B11,Fillet Weld,4,TYP,"Top of beam B11, at the joint with E11",High
+W3,Weld between PL10-21 and top flange of E11,Fillet Weld,6.3,"OF DRIVE TYP, M",Top of beam E11,High
+W4,Weld between Part 30 and top flange of E11,Fillet Weld,4,TYP,Top of beam E11,High
+W5,Weld between PL10-14 and top flange of F11,Fillet Weld,4,"TYP, M",Top of beam F11,High
+W6,Weld between Part 31 and top flange of F11,Fillet Weld,4,TYP,Top of beam F11,High
+W7,Weld between PL10-18 and top flange of D11,Fillet Weld,6.3,"OF MOTOR TYP, M",Top of beam D11,High
+W8,Weld between Part 2 and top flange of D11,Fillet Weld,4,TYP,Top of beam D11,High
+W9,Weld between Part 2 and top flange at far right end,Fillet Weld,4,TYP,Top far right of ELEVATION VIEW,High
+W10,Weld between Part 7 and web of B11,Double Fillet Weld,4,TYP,Web of beam B11,High
+W11,Weld between Part 13 and web of B11,Double Fillet Weld,4,TYP,Web of beam B11,High
+W12,Weld between Part 3 and web of B11,Double Fillet Weld,4,TYP,Web of beam B11,High
+W13,Weld between Part 4 and web at B11/E11 junction,Double Fillet Weld,4,TYP,Web at junction of B11 and E11,High
+W14,Weld between Part 13 and web of E11,Double Fillet Weld,4,TYP,Web of beam E11,High
+W15,Weld between Part 11 and web of E11,Double Fillet Weld,4,TYP,Web of beam E11,High
+W16,Weld between Part 8 and web of F11,Double Fillet Weld,4,TYP,Web of beam F11,High
+W17,Weld between Part 12 and web of F11,Double Fillet Weld,4,TYP,Web of beam F11,High
+W18,Weld between Part 2 and web at F11/D11 junction,Double Fillet Weld,4,TYP,Web at junction of F11 and D11,High
+W19,Weld between Part 8 and web of D11,Double Fillet Weld,4,TYP,Web of beam D11,High
+W20,Weld between Part 3 and web of D11,Double Fillet Weld,4,TYP,Web of beam D11,High
+W21,Weld between Part 8 and web at far right section,Double Fillet Weld,4,TYP,Web at far right of ELEVATION VIEW,High
+W22,Weld between Part 9 and web at far right section,Double Fillet Weld,4,TYP,Web at far right of ELEVATION VIEW,High
+W23,Weld between Part 2 and web at far right end,Double Fillet Weld,4,TYP,Web at far right end of ELEVATION VIEW,High
+W24,Weld between Part 7 and bottom flange of B11,Fillet Weld,4,TYP,Bottom of beam B11,High
+W25,Weld between Part 3 and bottom flange of B11,Fillet Weld,4,TYP,Bottom of beam B11,High
+W26,Weld between Part 4 and bottom flange at B11/E11 junction,Fillet Weld,4,TYP,Bottom at junction of B11 and E11,High
+W27,Weld between Part 11 and bottom flange of E11,Fillet Weld,4,TYP,Bottom of beam E11,High
+W28,Weld between Part 12 and bottom flange of F11,Fillet Weld,4,TYP,Bottom of beam F11,High
+W29,Weld between Part 2 and bottom flange at F11/D11 junction,Fillet Weld,4,TYP,Bottom at junction of F11 and D11,High
+W30,Weld between Part 3 and bottom flange of D11,Fillet Weld,4,TYP,Bottom of beam D11,High
+W31,Weld between Part 2 and bottom flange at far right end,Fillet Weld,4,TYP,Bottom far right of ELEVATION VIEW,High
+W32,Weld PL10-22 to web of B11,Fillet Weld All-Around,4,All-around symbol,On web of beam B11,High
+W33,Weld PL10-16 to web of E11,Fillet Weld All-Around,4,All-around symbol,On web of beam E11,High
+W34,Weld PL10-20 to web of E11,Fillet Weld All-Around,4,All-around symbol,On web of beam E11,High
+W35,Weld PL10-17 to web of F11,Fillet Weld All-Around,4,All-around symbol,On web of beam F11,High
+W36,Weld PL10-15 to web of D11,Fillet Weld All-Around,4,All-around symbol,On web of beam D11,High
+W37,Weld PL10-23 to web at far right section,Fillet Weld All-Around,4,All-around symbol,On web at far right of ELEVATION VIEW,High
+W38,Weld PIPE 60.3x3.6 1 to top flange of A11,Fillet Weld All-Around,4,All-around symbol,"Top left corner of ELEVATION VIEW, on beam A11",High
+W39,Weld between web Part 22 and top flange Part 15,Double Fillet Weld,6,TYP,"View B11-B11, top flange to web joint",High
+W40,Weld between web Part 22 and bottom flange Part 15,Double Fillet Weld,6,TYP,"View B11-B11, bottom flange to web joint",High
+W41,Weld between stiffener Part 24 and web Part 22,Double Fillet Weld,4,TYP,"View B11-B11, stiffener to web joint",High
+W42,Weld between stiffener Part 24 and top flange Part 15,Fillet Weld,4,TYP,"View B11-B11, stiffener to top flange joint",High
+W43,Weld between stiffener Part 24 and bottom flange Part 15,Fillet Weld,4,TYP,"View B11-B11, stiffener to bottom flange joint",High
+W44,Weld PL8-7 to web Part 22,Fillet Weld All-Around,4,"TYP, All-around symbol","View B11-B11, on web Part 22",High

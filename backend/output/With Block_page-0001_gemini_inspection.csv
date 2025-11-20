@@ -1,0 +1,21 @@
+Serial No,Description,Welding Type,Welding Value,Remarks,Position,Confidence
+W1,Welding PIPE 60.3x3.6 1 to Part 9,All-Around Fillet Weld,4 mm,TYP,Far left of Elevation View,High
+W2,Welding Part 24 to Part 19 and Part 22,Fillet Weld,3 mm,TYP,"Section B11-B11, left side",High
+W3,Welding Part 24 to Part 19 and Part 22,Fillet Weld,3 mm,TYP,"Section B11-B11, right side",High
+W4,Welding Part 7 to PL8 7,Double Fillet Weld,6 mm,TYP.,Bottom left of Elevation View,High
+W5,Welding Part 25 to PL10 22,Fillet Weld,6 mm,TYP.,"Left side of Elevation View, on angled plate",High
+W6,Welding Part 3 to the top flange,Double Fillet Weld,3 mm,"TYP, M","Top left of center, Elevation View",High
+W7,Welding Part 4 to the top flange,Double Fillet Weld,5 mm,"TYP, M","Top left of center, Elevation View",High
+W8,Welding Part 13 to PL10 16,Double Fillet Weld,3 mm,"TYP, M","Internal stiffener, left of center, Elevation View",High
+W9,Welding Part 30 to the bottom flange,Fillet Weld,6.3 mm,"OF DRIVE TYP, M","Bottom left of center, Elevation View",High
+W10,Welding Part 28 to the top flange,Double Fillet Weld,5 mm,"TYP, M","Top center, Elevation View",High
+W11,Welding Part 11 to PL10 20,Double Fillet Weld,3 mm,"TYP, M","Internal stiffener, center, Elevation View",High
+W12,Welding Part 31 to the bottom flange,Fillet Weld,10 mm,"TYP, M","Bottom center, Elevation View",High
+W13,Welding Part 26 to the top flange,Double Fillet Weld,4 mm,"OF MOTOR, M","Top right of center, Elevation View",High
+W14,Welding Part 8 to PL10 17,Double Fillet Weld,3 mm,"TYP., M","Internal stiffener, right of center, Elevation View",High
+W15,Welding Part 32 to the bottom flange,Fillet Weld,6.3 mm,OF MOTOR,"Bottom right of center, Elevation View",High
+W16,Welding Part 2 to the top flange,Double Fillet Weld,4 mm,M,"Top far right, Elevation View",High
+W17,Welding Part 2 to the bottom flange,Double Fillet Weld,4 mm,M,"Bottom far right, Elevation View",High
+W18,Welding Part 8 to PL10 23,Double Fillet Weld,3 mm,"TYP., M","Internal stiffener, right side, Elevation View",High
+W19,Welding Part 3 to the bottom flange,Double Fillet Weld,3 mm,"TYP, M","Bottom far right, Elevation View",High
+W20,Welding PIPE 60.3x3.6 1 to Part 9,All-Around Fillet Weld,4 mm,TYP,Far right of Elevation View,High
