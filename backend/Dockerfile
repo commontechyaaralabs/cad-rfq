@@ -28,7 +28,7 @@ COPY . .
 RUN mkdir -p output uploads
 
 # Copy startup script
-COPY start.sh .
+COPY scripts/start.sh .
 RUN chmod +x start.sh
 
 # Expose port

@@ -1,7 +1,0 @@
-Serial No,Description,Welding Type,Welding Value,Remarks,Position,Confidence
-W1,Welding MC200 to APH MODULE,Double Fillet Weld,8 mm,"Flag (1), (AT 2 PLACES)",SECTION P-P,High
-W2,Welding MB150 to APH MODULE,Double Fillet Weld,8 mm,"Flag (1), (AT 2 PLACES)",SECTION N-N,High
-W3,Welding MB150 top flange to U/S PLTF.,Fillet Weld,Not specified,Flag (1),SECTION N-N,High
-W4,Welding stiffener plate to U/S PLTF.,Fillet Weld,Not specified,Flag (1),SECTION N-N,High
-W5,Welding stiffener plate to MB150 web,Fillet Weld,Not specified,Flag (1),SECTION N-N,High
-W6,Welding 16THK. PLATE to BEAM FLANGE (as per DETAIL-1 in SECTION M-M),Single Bevel Groove Weld with Backing Fillet Weld,"Groove: 38° angle, 2 mm root opening; Fillet: 6 mm leg size","Flag (1)(1), TOP SIDE FLUSH GRIND",WELDING DETAIL,High

@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+.ENV/
+
+# Environment variables
+.env
+.env.local
+*.env
+
+# Logs
+*.log
+logs/
+inspection.log
+
+# Output files
+output/
+*.csv
+*.xlsx
+*.txt
+*.pdf
+*.jpg
+*.png
+*.docx
+
+# Test files
+src/
+test_files/
+*.test
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (runtime files)
+uploads/*
+!uploads/.gitkeep
+
+# Credentials (NEVER commit)
+credentials.json
+service-account*.json
+*-credentials.json
+
+# Temporary files
+temp_*
+*.tmp
+
