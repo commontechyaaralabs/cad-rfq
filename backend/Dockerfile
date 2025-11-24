@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install system dependencies for OpenCV and other libraries
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
@@ -27,11 +27,7 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p output uploads
 
-# Copy startup script
-COPY scripts/start.sh .
-RUN chmod +x start.sh
-
-# Expose port
+# Expose port (Cloud Run will set PORT env var)
 EXPOSE 8000
 
 # Set environment variables
@@ -39,7 +35,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 ENV WORKERS=1
 
-# Run the application using startup script
-# Cloud Run sets PORT env var automatically
-CMD ["./start.sh"]
+# Run the application
+# Cloud Run sets PORT env var automatically, so we use $PORT
+CMD uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WORKERS:-1}
 

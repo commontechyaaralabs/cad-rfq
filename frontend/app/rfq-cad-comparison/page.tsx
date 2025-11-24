@@ -5,6 +5,7 @@ import { PreviewModal } from "@/components/PreviewModal";
 import { formatBytes } from "@/utils/formatBytes";
 import { Header } from "@/components/Header";
 import { openComparePreview } from "@/utils/previewUtils";
+import { getApiUrl } from "@/utils/api";
 
 export default function RfqCadComparisonPage() {
   const [rfqFile, setRfqFile] = useState<File | null>(null);
@@ -462,7 +463,7 @@ export default function RfqCadComparisonPage() {
                       form.append("part", comparePart);
                       const controller = new AbortController();
                       setCompareAbort(controller);
-                      const res = await fetch("http://localhost:8000/compare", {
+                      const res = await fetch(getApiUrl("/compare"), {
                         method: "POST",
                         body: form,
                         signal: controller.signal,

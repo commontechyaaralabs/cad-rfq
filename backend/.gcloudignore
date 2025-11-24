@@ -1,4 +1,4 @@
-# Python
+# Ignore Python cache
 __pycache__/
 *.py[cod]
 *$py.class
@@ -52,4 +52,11 @@ output/*
 
 # Scripts (not needed in container)
 scripts/
+
+# DO NOT IGNORE - These are needed for the build
+!requirements.txt
+!api.py
+!main.py
+!Dockerfile
+!.dockerignore
 

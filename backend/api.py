@@ -103,20 +103,21 @@ app = FastAPI()
 allowed_origins_env = os.getenv("CORS_ORIGINS", "")
 if allowed_origins_env:
     # Split comma-separated origins from environment
-    allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",")]
+    # If set to "*", allow all origins
+    if allowed_origins_env.strip() == "*":
+        allowed_origins = ["*"]
+    else:
+        allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",")]
 else:
-    # Default origins for local development
-    allowed_origins = [
-        "http://localhost:3000",  # Next.js default port
-        "http://localhost:3001",  # Alternative Next.js port
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-    ]
+    # Default: Allow all origins for flexibility
+    # This includes localhost, 127.0.0.1, and network IPs (192.168.x.x, 10.x.x.x, etc.)
+    # For production, set CORS_ORIGINS environment variable with specific domains
+    allowed_origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=True if "*" not in allowed_origins else False,  # Can't use credentials with wildcard
     allow_methods=["*"],
     allow_headers=["*"],
 )

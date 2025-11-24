@@ -7,6 +7,7 @@ import { VendorCard } from "@/components/VendorCard";
 import { InsightsSummary } from "@/components/InsightsSummary";
 import { ComparisonGrid } from "@/components/ComparisonGrid";
 import { BusinessActions } from "@/components/BusinessActions";
+import { getApiUrl } from "@/utils/api";
 
 export default function VendorRfqComparisonPage() {
   const [vendorRfqFiles, setVendorRfqFiles] = useState<File[]>([]);
@@ -71,7 +72,7 @@ export default function VendorRfqComparisonPage() {
         form.append("files", file);
       });
 
-      const res = await fetch("http://localhost:8000/compare-vendor", {
+      const res = await fetch(getApiUrl("/compare-vendor"), {
         method: "POST",
         body: form,
       });

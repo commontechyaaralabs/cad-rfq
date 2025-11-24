@@ -5,6 +5,7 @@ import { renderFileIcon } from "@/components/FileIcon";
 import { PreviewModal } from "@/components/PreviewModal";
 import { formatBytes } from "@/utils/formatBytes";
 import { Header } from "@/components/Header";
+import { getApiUrl } from "@/utils/api";
 
 export default function WeldingAnalyzerPage() {
   const [isDragging, setIsDragging] = useState(false);
@@ -107,7 +108,7 @@ export default function WeldingAnalyzerPage() {
       const controller = new AbortController();
       setAbortCtrl(controller);
       
-      const res = await fetch("http://localhost:8000/analyze", {
+      const res = await fetch(getApiUrl("/analyze"), {
         method: "POST",
         body: form,
         signal: controller.signal,
