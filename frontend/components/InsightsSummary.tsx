@@ -76,7 +76,9 @@ export const InsightsSummary = ({ comparison, vendors }: InsightsSummaryProps) =
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">AI Insights Summary</h2>
+        <h2 className="text-lg font-bold text-gray-900">
+          <span className="blink-emoji">✨</span> AI Insights Summary
+        </h2>
         <p className="text-sm text-gray-500">Key recommendations at a glance</p>
       </div>
 

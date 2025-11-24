@@ -687,45 +687,70 @@ class WeldingInspector:
         return response_text
 
     @staticmethod
-    def _normalize_label(label: str) -> str:
-        return re.sub(r"[\s\-_]+", " ", label or "").strip().lower()
-
-    @staticmethod
     def _normalize_value(value: str) -> str:
         """
         Normalize RFQ/CAD values so that formatting differences
-        (spaces, commas, units) don't cause false mismatches.
+        (spaces, commas, diameter symbol, units, etc.) don't cause false mismatches.
 
         Examples:
-        "16 mm"   -> "16"
-        "16mm"    -> "16"
-        "75,5 mm" -> "75.5"
-        "75.5"    -> "75.5"
-        "M14"     -> "M14" (kept as designation)
+        "Ø300 mm"    -> "300"
+        "Ø300"       -> "300"
+        "75,5 mm"    -> "75.5"
+        "4 x Ø23.5"  -> "4x23.5"
+        "22.2°"      -> "22.2"
+        "M14"        -> "m14"
         """
         if not value:
             return ""
 
         v = value.strip().lower()
 
-        # 1) Normalize decimal separators: "75,5" -> "75.5"
+        # 1) normalize decimal separator
         v = v.replace(",", ".")
 
-        # 2) Strip common length units (extend this list if needed)
+        # 2) remove diameter & degree symbols
+        v = v.replace("ø", "").replace("°", "")
+
+        # 3) normalize multiplication/group notation: "4 x 23.5", "4-23.5" → "4x23.5"
+        v = v.replace("×", "x")
+        v = re.sub(r"\s*[-x]\s*", "x", v)
+
+        # 4) strip common units
         units = [" mm", "mm", " in", "in"]
         for unit in units:
             if v.endswith(unit):
                 v = v[: -len(unit)].strip()
                 break
 
-        # 3) If pure number, return canonical numeric form
+        # 5) if pure number -> canonical numeric form
         num_match = re.fullmatch(r"[-+]?\d*\.?\d+", v)
         if num_match:
             return num_match.group(0)
 
-        # 4) Mixed designations like "m14" stay as-is (remove only spaces/commas)
-        return re.sub(r"[\s,]+", "", value).strip()
+        # 6) fallback: compact spaces/commas on the cleaned string
+        v = re.sub(r"[\s,]+", "", v)
+        return v.strip()
 
+    def _normalize_label(self, label: str) -> str:
+        """
+        Normalize parameter labels to create consistent dictionary keys for matching.
+        
+        Examples:
+        "Thread Size"    -> "threadsize"
+        "Thread_Size"    -> "threadsize"
+        "Part Number"    -> "partnumber"
+        "Hex Size"       -> "hexsize"
+        """
+        if not label:
+            return ""
+        
+        # Convert to lowercase and strip whitespace
+        normalized = label.strip().lower()
+        
+        # Replace common separators (spaces, underscores, hyphens) with nothing
+        normalized = re.sub(r"[\s_\-]+", "", normalized)
+        
+        return normalized
 
     def _spec_list_to_dict(self, items: List[str]) -> Dict[str, Dict[str, str]]:
         """Convert ['Thread Size: M14', ...] to key→{label,value} dict."""
@@ -742,129 +767,275 @@ class WeldingInspector:
             specs[key] = {"label": raw_label.strip(), "value": raw_value.strip()}
         return specs
 
-    def _extract_cad_annotations(
+    def build_metric_records(
+        self,
+        rfq_requirements: List[str],
+        cad_findings: List[str],
+    ) -> List[Dict]:
+        """
+        Build canonical metric records with backend-determined status.
+        
+        Returns a list of records with:
+        {
+            "key": normalized key (e.g., "threadsize"),
+            "label": original RFQ label (e.g., "Thread Size"),
+            "rfq_value": RFQ value string,
+            "cad_value": CAD value string (or "" if missing),
+            "match": "Match" | "Mismatch" | "Missing" | "Extra"
+        }
+        """
+        rfq_specs = self._spec_list_to_dict(rfq_requirements)
+        cad_specs = self._spec_list_to_dict(cad_findings)
+        
+        if not rfq_specs:
+            logger.info("[METRIC-RECORDS] No RFQ specs available")
+            return []
+        
+        records: List[Dict] = []
+        
+        # Process RFQ metrics
+        for key, rfq_spec in rfq_specs.items():
+            cad_spec = cad_specs.get(key)
+            cad_value = cad_spec.get("value", "").strip() if cad_spec else ""
+            rfq_value = rfq_spec.get("value", "").strip()
+            
+            # Determine status
+            if not cad_spec or not cad_value:
+                match_status = "Missing"
+            elif self._normalize_value(rfq_value) == self._normalize_value(cad_value):
+                match_status = "Match"
+            else:
+                match_status = "Mismatch"
+            
+            records.append({
+                "key": key,
+                "label": rfq_spec.get("label", ""),
+                "rfq_value": rfq_value,
+                "cad_value": cad_value,
+                "match": match_status,
+            })
+        
+        # Optionally include CAD-only metrics as "Extra"
+        for key, cad_spec in cad_specs.items():
+            if key not in rfq_specs:
+                records.append({
+                    "key": key,
+                    "label": cad_spec.get("label", ""),
+                    "rfq_value": "",
+                    "cad_value": cad_spec.get("value", "").strip(),
+                    "match": "Extra",
+                })
+        
+        logger.info("[METRIC-RECORDS] Built %d metric records", len(records))
+        return records
+
+    def _extract_cad_bboxes(
         self,
         cad_bytes: bytes,
         cad_mime: str,
-        rfq_requirements: List[str],
+        metric_records: List[Dict],
     ) -> List[Dict]:
         """
-        Ask Gemini for CAD dimension annotations with bounding boxes,
-        anchored to the RFQ metrics.
-
+        Ask Gemini for bounding boxes ONLY (no status/value decisions).
+        
         Returns a list of entries such as:
         {
           "parameter": "Thread Length",
-          "value": "19",
+          "key": "threadlength",
           "bounding_box": [x1, y1, x2, y2]
         }
         """
-        # Join RFQ specs so the model knows which metrics to look for
-        rfq_text = "\n".join(rfq_requirements)
-
+        # Build text block of metrics that have CAD values
+        metrics_with_cad = [
+            f"{record['label']}: {record['cad_value']}"
+            for record in metric_records
+            if record.get("cad_value") and record.get("match") != "Missing"
+        ]
+        
+        if not metrics_with_cad:
+            logger.info("[ANNOTATION] No metrics with CAD values to locate")
+            return []
+        
+        metrics_text = "\n".join(metrics_with_cad)
+        
         prompt = (
             "You are an expert in reading engineering drawings.\n"
             "You will receive:\n"
-            "1) A list of RFQ metrics and their values.\n"
+            "1) A list of metric names and their values (already determined from the drawing).\n"
             "2) A CAD drawing image.\n\n"
-            "RFQ METRICS (name: value):\n"
-            f"{rfq_text}\n\n"
-            "For EACH RFQ metric, try to find the corresponding dimension on the drawing.\n"
-            "Rules:\n"
-            "  - Use the RFQ metric name EXACTLY as the \"parameter\" field.\n"
-            "  - Read the dimension from the drawing as the \"value\" field (without units like 'mm' or 'in').\n"
-            "  - Draw the bounding box around the dimension text / arrow associated with that metric.\n"
-            "  - If you cannot find a given metric on the drawing, simply omit it from the output array.\n\n"
-            "CRITICAL OUTPUT FORMAT:\n"
+            "METRICS TO LOCATE (name: value):\n"
+            f"{metrics_text}\n\n"
+            "YOUR TASK:\n"
+            "For each metric in the list above, locate the corresponding dimension text/annotation on the drawing.\n"
+            "Draw a bounding box around the dimension text and any associated arrows or callouts.\n\n"
+            "CRITICAL RULES:\n"
+            "  - Use the metric name EXACTLY as provided in the \"parameter\" field.\n"
+            "  - Do NOT change or re-interpret the metric values.\n"
+            "  - Do NOT decide if values match or mismatch - that is already determined.\n"
+            "  - Only provide bounding boxes for dimensions you can clearly see on the drawing.\n"
+            "  - If you cannot find a metric, simply omit it from the output.\n"
+            "  - The bounding_box MUST be [x_min, y_min, x_max, y_max] with all values between 0 and 1,\n"
+            "    normalized relative to the image width/height (0 = left/top, 1 = right/bottom).\n\n"
+            "OUTPUT FORMAT:\n"
             "Return ONLY a JSON array, no extra text, no markdown.\n"
             "Example:\n"
             "[\n"
             "  {\n"
             '    "parameter": "Thread Length",\n'
-            '    "value": "19",\n'
-            '    "bounding_box": [100, 200, 160, 220]\n'
+            '    "bounding_box": [0.1, 0.2, 0.16, 0.22]\n'
             "  },\n"
             "  {\n"
             '    "parameter": "Overall Length",\n'
-            '    "value": "75.5",\n'
-            '    "bounding_box": [250, 80, 320, 110]\n'
+            '    "bounding_box": [0.25, 0.08, 0.32, 0.11]\n'
             "  }\n"
             "]\n"
         )
 
-        response_text = self.client.chat_with_files(
-            prompt,
-            [
-                (cad_bytes, cad_mime),
-            ],
-        )
-
-        cleaned = self._strip_markdown_fence(response_text).strip()
-
-        if not cleaned:
-            logger.warning("[ANNOTATION] Gemini returned empty annotation payload; skipping auto-annotations")
-            return []
-
-        parsed: Optional[Union[List, Dict]] = None
-
         try:
-            parsed = json.loads(cleaned)
-        except json.JSONDecodeError:
-            # Try to locate JSON array or object inside the text
-            array_match = re.search(r'\[.*\]', cleaned, re.DOTALL)
-            object_match = re.search(r'\{.*\}', cleaned, re.DOTALL)
-            candidate = (
-                array_match.group(0)
-                if array_match
-                else object_match.group(0)
-                if object_match
-                else None
+            response_text = self.client.chat_with_files(
+                prompt,
+                [
+                    (cad_bytes, cad_mime),
+                ],
             )
 
-            if candidate:
-                try:
-                    parsed = json.loads(candidate)
-                except json.JSONDecodeError:
-                    logger.error(
-                        "[ANNOTATION] Failed to parse candidate JSON chunk for annotations",
-                        exc_info=True,
+            cleaned = self._strip_markdown_fence(response_text).strip()
+
+            if not cleaned:
+                logger.warning("[ANNOTATION] Gemini returned empty bbox payload")
+                return []
+
+            parsed: Optional[Union[List, Dict]] = None
+
+            try:
+                parsed = json.loads(cleaned)
+            except json.JSONDecodeError as e:
+                logger.debug("[ANNOTATION] Initial JSON parse failed (may be truncated), trying fallback strategies")
+                
+                # Strategy 1: Try to extract complete JSON objects from a potentially truncated array
+                # Find all complete JSON objects in the text
+                objects = []
+                depth = 0
+                start = -1
+                in_string = False
+                escape = False
+                
+                for i, char in enumerate(cleaned):
+                    if escape:
+                        escape = False
+                        continue
+                    if char == '\\':
+                        escape = True
+                        continue
+                    if char == '"' and not escape:
+                        in_string = not in_string
+                        continue
+                    if in_string:
+                        continue
+                    
+                    if char == '{':
+                        if depth == 0:
+                            start = i
+                        depth += 1
+                    elif char == '}':
+                        depth -= 1
+                        if depth == 0 and start >= 0:
+                            # Found a complete object
+                            try:
+                                obj_str = cleaned[start:i+1]
+                                obj = json.loads(obj_str)
+                                if isinstance(obj, dict):
+                                    objects.append(obj)
+                            except json.JSONDecodeError:
+                                pass
+                            start = -1
+                
+                if objects:
+                    logger.info(
+                        "[ANNOTATION] Extracted %d complete objects from truncated JSON",
+                        len(objects)
                     )
+                    parsed = objects
+                else:
+                    # Strategy 2: Try to find JSON array or object with regex (less reliable)
+                    array_match = re.search(r'\[.*\]', cleaned, re.DOTALL)
+                    object_match = re.search(r'\{.*\}', cleaned, re.DOTALL)
+                    candidate = (
+                        array_match.group(0)
+                        if array_match
+                        else object_match.group(0)
+                        if object_match
+                        else None
+                    )
+
+                    if candidate:
+                        try:
+                            parsed = json.loads(candidate)
+                        except json.JSONDecodeError:
+                            logger.warning(
+                                "[ANNOTATION] Failed to parse candidate JSON chunk (response likely truncated at MAX_TOKENS)"
+                            )
+                    else:
+                        logger.warning("[ANNOTATION] No JSON structure detected in bbox response")
+
+            if parsed is None:
+                logger.warning("[ANNOTATION] Gemini bbox response was not valid JSON (response may be truncated)")
+                return []
+
+            # Support both raw list and {"annotations": [...]} style
+            if isinstance(parsed, dict) and "annotations" in parsed:
+                data = parsed.get("annotations")
             else:
-                logger.error("[ANNOTATION] No JSON structure detected in annotation response")
+                data = parsed
 
-        if parsed is None:
-            logger.warning("[ANNOTATION] Gemini annotation response was not valid JSON; skipping auto-annotations")
-            return []
+            if not isinstance(data, list):
+                logger.warning("[ANNOTATION] Bbox payload is not an array")
+                return []
 
-        # Support both raw list and {"annotations": [...]} style
-        if isinstance(parsed, dict) and "annotations" in parsed:
-            data = parsed.get("annotations")
-        else:
-            data = parsed
-
-        if not isinstance(data, list):
-            logger.warning("[ANNOTATION] Annotation payload is not an array; skipping auto-annotations")
-            return []
-
-        annotations: List[Dict] = []
-        for entry in data:
-            if not isinstance(entry, dict):
-                continue
-            parameter = str(entry.get("parameter", "")).strip()
-            value = str(entry.get("value", entry.get("text", ""))).strip()
-            bbox = entry.get("bounding_box") or entry.get("bbox")
-            if not parameter:
-                continue
-            annotations.append(
-                {
+            bbox_entries: List[Dict] = []
+            for entry in data:
+                if not isinstance(entry, dict):
+                    continue
+                parameter = str(entry.get("parameter", "")).strip()
+                bbox = entry.get("bounding_box") or entry.get("bbox")
+                if not parameter:
+                    continue
+                
+                # Validate bounding box format
+                if bbox is not None:
+                    if not isinstance(bbox, list) or len(bbox) != 4:
+                        logger.debug(
+                            "[ANNOTATION] Skipping invalid bbox format for parameter '%s': %s",
+                            parameter,
+                            bbox
+                        )
+                        continue
+                    # Ensure all values are numeric
+                    try:
+                        bbox = [float(x) for x in bbox]
+                    except (ValueError, TypeError):
+                        logger.debug(
+                            "[ANNOTATION] Skipping bbox with non-numeric values for parameter '%s': %s",
+                            parameter,
+                            bbox
+                        )
+                        continue
+                
+                # Map parameter back to metric record to get normalized key
+                normalized_key = self._normalize_label(parameter)
+                
+                bbox_entries.append({
                     "parameter": parameter,
-                    "value": value,
+                    "key": normalized_key,
                     "bounding_box": bbox,
-                }
-            )
+                })
 
-        logger.info("[ANNOTATION] Extracted %d CAD annotations", len(annotations))
-        return annotations
+            logger.info("[ANNOTATION] Extracted %d CAD bounding boxes", len(bbox_entries))
+            return bbox_entries
+            
+        except Exception as exc:
+            logger.warning("[ANNOTATION] Unable to extract CAD bounding boxes: %s", exc, exc_info=True)
+            return []
 
     @staticmethod
     def _normalize_bbox(
@@ -957,6 +1128,7 @@ class WeldingInspector:
             "Match": (0, 180, 0),
             "Mismatch": (0, 0, 255),
             "Missing": (0, 215, 255),
+            "Extra": (255, 165, 0),  # Orange for CAD-only metrics
         }
 
         for record in comparisons:
@@ -993,67 +1165,69 @@ class WeldingInspector:
     def generate_auto_annotations(
         self,
         rfq_requirements: List[str],
+        cad_findings: List[str],
         cad_bytes: bytes,
         cad_mime: str,
     ) -> Tuple[Optional[str], List[Dict]]:
-        """Build comparison records and annotated image."""
+        """
+        Build comparison records and annotated image using two-step flow:
+        1. build_metric_records: backend determines Match/Mismatch/Missing status
+        2. _extract_cad_bboxes: Gemini only provides bounding box locations
+        """
         if not cad_mime.startswith("image/"):
             logger.info("[ANNOTATION] CAD file is not an image; skipping auto-annotation")
             return None, []
 
-        rfq_specs = self._spec_list_to_dict(rfq_requirements)
-        if not rfq_specs:
-            logger.info("[ANNOTATION] No structured RFQ specs available for annotation")
-            return None, []
-
+        # Step 1: Build canonical metric records with backend-determined status
         try:
-            cad_annotations = self._extract_cad_annotations(
-                cad_bytes,
-                cad_mime,
-                rfq_requirements,
-            )
+            metric_records = self.build_metric_records(rfq_requirements, cad_findings)
         except Exception as exc:
-            logger.warning("[ANNOTATION] Unable to extract CAD annotations: %s", exc)
+            logger.warning("[ANNOTATION] Unable to build metric records: %s", exc, exc_info=True)
             return None, []
 
-        cad_lookup = {
-            self._normalize_label(entry.get("parameter", "")): entry for entry in cad_annotations
-        }
+        if not metric_records:
+            logger.info("[ANNOTATION] No metric records available for annotation")
+            return None, []
 
+        # Step 2: Get bounding boxes from Gemini (no status/value decisions)
+        try:
+            bbox_entries = self._extract_cad_bboxes(cad_bytes, cad_mime, metric_records)
+        except Exception as exc:
+            logger.warning("[ANNOTATION] Unable to extract CAD bounding boxes: %s", exc, exc_info=True)
+            bbox_entries = []
+
+        # Step 3: Merge metric records with bounding boxes
+        bbox_lookup = {entry.get("key"): entry for entry in bbox_entries}
+        
         comparison_records: List[Dict] = []
-        for key, spec in rfq_specs.items():
-            cad_entry = cad_lookup.get(key)
-            cad_value = cad_entry.get("value") if cad_entry else None
-            match_status = "Missing"
-            if cad_entry:
-                if (
-                    cad_value
-                    and self._normalize_value(cad_value)
-                    == self._normalize_value(spec["value"])
-                ):
-                    match_status = "Match"
-                else:
-                    match_status = "Mismatch"
-
-            bbox = cad_entry.get("bounding_box") if cad_entry else None
+        for record in metric_records:
+            bbox_entry = bbox_lookup.get(record.get("key"))
+            bbox = bbox_entry.get("bounding_box") if bbox_entry else None
+            
+            # Normalize bounding box format
             if isinstance(bbox, list) and len(bbox) == 4:
                 bbox_values = [float(coord) for coord in bbox]
             else:
                 bbox_values = None
 
-            comparison_records.append(
-                {
-                    "parameter": spec["label"],
-                    "rfq_value": spec["value"],
-                    "cad_value": cad_value,
-                    "match": match_status,
-                    "bounding_box": bbox_values,
-                }
-            )
+            comparison_records.append({
+                "parameter": record.get("label", ""),
+                "rfq_value": record.get("rfq_value", ""),
+                "cad_value": record.get("cad_value", ""),
+                "match": record.get("match", "Missing"),
+                "bounding_box": bbox_values,
+            })
 
+        # Step 4: Create annotated image with only records that have bounding boxes
         annotated_image = self._annotate_cad_image(
             cad_bytes,
             [record for record in comparison_records if record.get("bounding_box")],
+        )
+
+        logger.info(
+            "[ANNOTATION] Generated %d annotation records (%d with bboxes)",
+            len(comparison_records),
+            len([r for r in comparison_records if r.get("bounding_box")]),
         )
 
         return annotated_image, comparison_records
@@ -1564,6 +1738,7 @@ async def compare_rfq_cad(
         try:
             annotated_image, annotation_records = inspector.generate_auto_annotations(
                 result.get("rfq_requirements", []),
+                result.get("cad_findings", []),
                 cad_bytes,
                 cad_mime,
             )
