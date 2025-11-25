@@ -849,67 +849,191 @@ export default function RfqCadComparisonPage() {
                     const totalMetrics = (compareResult.rfq_requirements || []).length;
                     const allSelected = totalMetrics > 0 && Array.from({ length: totalMetrics }, (_, idx) => idx).every(idx => compareSelections[idx] === true);
 
+                    // Get selected metrics grouped by section
+                    const selectedMetricsBySection: Record<string, Array<{ idx: number; label: string; rfqVal: string; cadVal: string; status: string; statusColor: string }>> = {};
+                    
+                    (compareResult.rfq_requirements || []).forEach((rfqItem, idx) => {
+                      if (!compareSelections[idx]) return;
+                      const cadItem = compareResult.cad_findings[idx] || '';
+                      const [metricLabel, rfqValRaw] = String(rfqItem).split(':');
+                      const [, cadValRaw] = String(cadItem).split(':');
+                      const rfqVal = (rfqValRaw || '').trim();
+                      const cadVal = (cadValRaw || '').trim();
+                      const hasCad = !!cadVal;
+                      const isMatch = !!(rfqVal && cadVal && rfqVal === cadVal);
+                      const isMissing = !hasCad;
+                      const status = isMatch ? 'Match' : isMissing ? 'Missing' : 'Mismatch';
+                      const statusColor = 
+                        status === 'Match' ? '#10B981' :
+                        status === 'Mismatch' ? '#EF4444' :
+                        '#F59E0B';
+                      
+                      const section = categorizeMetric(metricLabel);
+                      if (!selectedMetricsBySection[section]) {
+                        selectedMetricsBySection[section] = [];
+                      }
+                      selectedMetricsBySection[section].push({ idx, label: metricLabel, rfqVal, cadVal, status, statusColor });
+                    });
+
+                    const selectedTableRows: Array<{ type: 'section' | 'data'; sectionName?: string; metric?: { idx: number; label: string; rfqVal: string; cadVal: string; status: string; statusColor: string } }> = [];
+                    
+                    sectionOrder.forEach((sectionName) => {
+                      const metrics = selectedMetricsBySection[sectionName];
+                      if (!metrics || metrics.length === 0) return;
+                      
+                      selectedTableRows.push({ type: 'section', sectionName });
+                      metrics.forEach((metric) => {
+                        selectedTableRows.push({ type: 'data', metric });
+                      });
+                    });
+
+                    const selectedCount = selectedTableRows.filter(row => row.type === 'data').length;
+
                     return (
-                      <div className="w-full rounded-lg overflow-hidden border border-gray-200">
-                        <table className="w-full border-collapse text-xs">
-                          <thead style={{ backgroundColor: '#F3F4F6' }}>
-                            <tr>
-                              <th className="text-left px-4 py-2 font-semibold text-gray-600">Metrics</th>
-                              <th className="text-left px-4 py-2 font-semibold text-gray-600">RFQ Requirements</th>
-                              <th className="text-left px-4 py-2 font-semibold text-gray-600">CAD Findings</th>
-                              <th className="text-center px-4 py-2 font-semibold text-gray-600">
-                                <div className="flex items-center justify-center gap-2">
-                                  <span>Select All</span>
-                                  <input
-                                    type="checkbox"
-                                    checked={allSelected}
-                                    onChange={() => {
-                                      const newValue = !allSelected;
-                                      setCompareSelections(Array(totalMetrics).fill(newValue));
-                                    }}
-                                    style={{ cursor: 'pointer' }}
-                                  />
-                                </div>
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {tableRows.map((row, idx) => {
-                              if (row.type === 'section') {
-                                return (
-                                  <tr key={`section-${row.sectionName}`}>
-                                    <td colSpan={4} className="px-4 py-2 font-semibold bg-green-50 text-gray-700 border-t border-gray-200">
-                                      {row.sectionName}
-                                    </td>
+                      <div className="space-y-6">
+                        <div className="w-full rounded-lg overflow-hidden border border-gray-200">
+                          <table className="w-full border-collapse text-xs">
+                            <thead style={{ backgroundColor: '#F3F4F6' }}>
+                              <tr>
+                                <th className="text-left px-4 py-2 font-semibold text-gray-600">Metrics</th>
+                                <th className="text-left px-4 py-2 font-semibold text-gray-600">RFQ Requirements</th>
+                                <th className="text-left px-4 py-2 font-semibold text-gray-600">CAD Findings</th>
+                                <th className="text-center px-4 py-2 font-semibold text-gray-600">
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>Select All</span>
+                                    <input
+                                      type="checkbox"
+                                      checked={allSelected}
+                                      onChange={() => {
+                                        const newValue = !allSelected;
+                                        setCompareSelections(Array(totalMetrics).fill(newValue));
+                                      }}
+                                      style={{ cursor: 'pointer' }}
+                                    />
+                                  </div>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tableRows.map((row, idx) => {
+                                if (row.type === 'section') {
+                                  return (
+                                    <tr key={`section-${row.sectionName}`}>
+                                      <td colSpan={4} className="px-4 py-2 font-semibold bg-green-50 text-gray-700 border-t border-gray-200">
+                                        {row.sectionName}
+                                      </td>
+                                    </tr>
+                                  );
+                                } else {
+                                  const metric = row.metric!;
+                                  return (
+                                    <tr key={`row-${metric.idx}`} className="bg-white hover:bg-gray-50 transition-colors">
+                                      <td className="px-4 py-2 text-gray-900">{metric.label}</td>
+                                      <td className="px-4 py-2 text-gray-900">{metric.rfqVal}</td>
+                                      <td className="px-4 py-2 text-gray-900">{metric.cadVal}</td>
+                                      <td className="px-4 py-2 text-center">
+                                        <input
+                                          type="checkbox"
+                                          checked={metric.isChecked}
+                                          onChange={() => {
+                                            setCompareSelections(prev => {
+                                              const next = [...prev];
+                                              next[metric.idx] = !metric.isChecked;
+                                              return next;
+                                            });
+                                          }}
+                                          className="cursor-pointer"
+                                        />
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        {/* Selected Items Table Section */}
+                        {selectedCount > 0 && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                Selected Items ({selectedCount})
+                              </h3>
+                              <button
+                                onClick={() => {
+                                  setCompareSelections(Array((compareResult.rfq_requirements || []).length).fill(false));
+                                }}
+                                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                              >
+                                Clear All
+                              </button>
+                            </div>
+                            <div className="w-full rounded-lg overflow-hidden border border-gray-200">
+                              <table className="w-full border-collapse text-xs">
+                                <thead style={{ backgroundColor: '#F3F4F6' }}>
+                                  <tr>
+                                    <th className="text-left px-4 py-2 font-semibold text-gray-600">Metrics</th>
+                                    <th className="text-left px-4 py-2 font-semibold text-gray-600">RFQ Requirements</th>
+                                    <th className="text-left px-4 py-2 font-semibold text-gray-600">CAD Findings</th>
+                                    <th className="text-left px-4 py-2 font-semibold text-gray-600">Status</th>
+                                    <th className="text-center px-4 py-2 font-semibold text-gray-600">Action</th>
                                   </tr>
-                                );
-                              } else {
-                                const metric = row.metric!;
-                                return (
-                                  <tr key={`row-${metric.idx}`} className="bg-white hover:bg-gray-50 transition-colors">
-                                    <td className="px-4 py-2 text-gray-900">{metric.label}</td>
-                                    <td className="px-4 py-2 text-gray-900">{metric.rfqVal}</td>
-                                    <td className="px-4 py-2 text-gray-900">{metric.cadVal}</td>
-                                    <td className="px-4 py-2 text-center">
-                                      <input
-                                        type="checkbox"
-                                        checked={metric.isChecked}
-                                        onChange={() => {
-                                          setCompareSelections(prev => {
-                                            const next = [...prev];
-                                            next[metric.idx] = !metric.isChecked;
-                                            return next;
-                                          });
-                                        }}
-                                        className="cursor-pointer"
-                                      />
-                                    </td>
-                                  </tr>
-                                );
-                              }
-                            })}
-                          </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                  {selectedTableRows.map((row, idx) => {
+                                    if (row.type === 'section') {
+                                      return (
+                                        <tr key={`selected-section-${row.sectionName}`}>
+                                          <td colSpan={5} className="px-4 py-2 font-semibold bg-green-50 text-gray-700 border-t border-gray-200">
+                                            {row.sectionName}
+                                          </td>
+                                        </tr>
+                                      );
+                                    } else {
+                                      const metric = row.metric!;
+                                      return (
+                                        <tr key={`selected-row-${metric.idx}`} className="bg-white hover:bg-gray-50 transition-colors">
+                                          <td className="px-4 py-2 text-gray-900">{metric.label}</td>
+                                          <td className="px-4 py-2 text-gray-900">{metric.rfqVal || '—'}</td>
+                                          <td className="px-4 py-2 text-gray-900">{metric.cadVal || '—'}</td>
+                                          <td className="px-4 py-2">
+                                            <span
+                                              className="px-2.5 py-1 rounded text-xs font-semibold"
+                                              style={{
+                                                backgroundColor: metric.statusColor + '20',
+                                                color: metric.statusColor,
+                                              }}
+                                            >
+                                              {metric.status.toUpperCase()}
+                                            </span>
+                                          </td>
+                                          <td className="px-4 py-2 text-center">
+                                            <button
+                                              onClick={() => {
+                                                setCompareSelections(prev => {
+                                                  const next = [...prev];
+                                                  next[metric.idx] = false;
+                                                  return next;
+                                                });
+                                              }}
+                                              className="text-gray-400 hover:text-red-600 transition-colors"
+                                              title="Remove from selection"
+                                            >
+                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                              </svg>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      );
+                                    }
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
