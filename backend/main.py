@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 
 
 # ----------------- Config -----------------
-PROJECT = "playgroundai-470111"          # your GCP project ID
+PROJECT = "logistics-479609"          # your GCP project ID
 REGION = "us-east4"                      # your Vertex AI region
 MODEL = "gemini-2.5-pro"                 # Gemini model name
 IMAGE_PATH = "E:/Office/paligemma/backend/src/With Block_page-0001.jpg"  # your CAD/welding drawing

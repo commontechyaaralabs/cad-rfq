@@ -8,8 +8,8 @@ This document explains the organization of the backend directory.
 backend/
 │
 ├── 📄 Core Application Files
-│   ├── api.py              # Main FastAPI application and routes
-│   ├── main.py             # Welding inspector implementation
+│   ├── api.py              # Main FastAPI application with all endpoints
+│   ├── main.py             # Welding inspector & Gemini client implementation
 │   ├── run_server.py       # Development server (with auto-reload)
 │   └── run_production.py   # Production server (multi-worker)
 │
@@ -17,70 +17,63 @@ backend/
 │   ├── requirements.txt    # Python dependencies
 │   ├── env.example         # Environment variables template
 │   ├── Dockerfile          # Docker container definition
-│   ├── docker-compose.yml  # Docker Compose configuration
-│   ├── cloudbuild.yaml     # Google Cloud Build config
 │   ├── .dockerignore       # Files to exclude from Docker builds
+│   ├── .gcloudignore       # Files to exclude from gcloud builds
 │   └── .gitignore          # Files to exclude from Git
 │
-├── 📚 docs/                # All Documentation
-│   ├── README.md           # (if exists)
-│   ├── DEPLOYMENT.md       # General deployment guide
-│   ├── DEPLOY_TO_CLOUDRUN.md
-│   ├── DEPLOY_WITHOUT_DOCKER.md
-│   ├── QUICK_DEPLOY_CLOUDRUN.md
-│   ├── SERVICE_ACCOUNT_SETUP.md
-│   ├── RUN_SCRIPTS.md      # How to run PowerShell scripts
+├── 📚 docs/                # Documentation
+│   ├── MIGRATION_TO_LOGISTICS_PROJECT.md  # Cloud project migration guide
 │   └── STRUCTURE.md        # This file
 │
-├── 🔧 scripts/             # Deployment & Utility Scripts
-│   ├── deploy.ps1          # Full PowerShell deployment script
-│   ├── deploy.bat          # Windows batch deployment
-│   ├── deploy.sh           # Linux/Mac deployment
-│   ├── deploy-cloudrun.ps1 # Cloud Run specific deployment
-│   ├── quick-start.ps1     # Quick setup and run
-│   ├── setup-env.ps1       # Environment variable setup
-│   ├── cleanup.ps1        # Cleanup utility
-│   └── start.sh            # Docker/Cloud Run startup script
+├── 🔧 scripts/             # Deployment Scripts
+│   └── deploy-gcloud.ps1   # PowerShell Cloud Run deployment script
 │
 ├── 🐍 .venv/               # Python Virtual Environment (not in git)
 │
-└── 📁 Runtime Directories
-    └── uploads/            # User uploaded files (runtime)
+└── 📁 uploads/             # Runtime upload directory
 ```
 
 ## 📝 File Descriptions
 
 ### Core Application
-- **api.py**: Main FastAPI application with all API endpoints
-- **main.py**: Welding inspector class and Gemini client implementation
-- **run_server.py**: Development server with hot-reload enabled
-- **run_production.py**: Production server with multiple workers
+| File | Description |
+|------|-------------|
+| `api.py` | Main FastAPI application with all API endpoints (welding analysis, RFQ comparison, supply chain automation) |
+| `main.py` | Welding inspector class with Gemini client implementation |
+| `run_server.py` | Development server with hot-reload enabled (uvicorn --reload) |
+| `run_production.py` | Production server with multiple workers |
 
 ### Configuration
-- **requirements.txt**: All Python package dependencies
-- **env.example**: Template for environment variables
-- **Dockerfile**: Container image definition
-- **docker-compose.yml**: Local Docker development setup
-- **cloudbuild.yaml**: Google Cloud Build configuration
+| File | Description |
+|------|-------------|
+| `requirements.txt` | All Python package dependencies |
+| `env.example` | Template for environment variables |
+| `Dockerfile` | Container image definition for Cloud Run |
+| `.dockerignore` | Files excluded from Docker builds |
+| `.gcloudignore` | Files excluded from gcloud builds |
 
 ### Documentation (docs/)
-All markdown documentation files are organized here for easy access.
+| File | Description |
+|------|-------------|
+| `MIGRATION_TO_LOGISTICS_PROJECT.md` | Guide for migrating to `logistics-479609` project |
+| `STRUCTURE.md` | This file - directory structure documentation |
 
 ### Scripts (scripts/)
-All executable scripts for deployment, setup, and utilities.
+| File | Description |
+|------|-------------|
+| `deploy-gcloud.ps1` | PowerShell script for Cloud Run deployment |
 
-## 🎯 Why This Structure?
+## 🌐 Deployed Service
 
-1. **Separation of Concerns**: Code, config, docs, and scripts are clearly separated
-2. **Easy Navigation**: Related files are grouped together
-3. **Clean Root**: Root directory only contains essential files
-4. **Scalability**: Easy to add new documentation or scripts without cluttering
-5. **Standard Practice**: Follows common Python project structure conventions
+- **Project:** `logistics-479609`
+- **Service:** `logistics-manufacturing-api`
+- **Region:** `us-east4`
+- **URL:** https://logistics-manufacturing-api-1033805860980.us-east4.run.app
 
 ## 📌 Notes
 
 - Virtual environment (`.venv/`) is excluded from git
-- Runtime directories (`uploads/`, `output/`) are excluded from git
+- Runtime directories (`uploads/`) are excluded from git
 - All temporary files are excluded via `.gitignore`
-- Scripts maintain their original functionality, just organized better
-
+- Use Application Default Credentials for local development
+- Cloud Run uses Workload Identity for authentication

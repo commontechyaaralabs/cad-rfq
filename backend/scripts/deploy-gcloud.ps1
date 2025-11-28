@@ -2,9 +2,9 @@
 # Usage: .\scripts\deploy-gcloud.ps1
 
 param(
-    [string]$ProjectId = "playgroundai-470111",
+    [string]$ProjectId = "logistics-479609",
     [string]$Region = "us-east4",
-    [string]$ServiceName = "welding-analyzer-api",
+    [string]$ServiceName = "logistics-manufacturing-api",
     [string]$ImageTag = "latest",
     [switch]$SkipBuild = $false,
     [string]$Memory = "2Gi",

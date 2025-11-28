@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import io
 import json
@@ -6,6 +7,8 @@ import mimetypes
 import os
 import re
 import subprocess
+import uuid
+from datetime import datetime
 from typing import List, Tuple, Union, Optional, Dict
 
 import cv2
@@ -47,7 +50,7 @@ def _resolve_project_id() -> str:
     )
 
 
-DEFAULT_PROJECT = "playgroundai-470111"
+DEFAULT_PROJECT = "logistics-479609"
 _bootstrap_logger = logging.getLogger(__name__)
 
 
@@ -1567,6 +1570,22 @@ def health():
     """Health check endpoint."""
     return {"status": "healthy", "service": "Welding Inspector API"}
 
+@app.get("/supply-chain/health")
+def supply_chain_health():
+    """Health check for supply chain endpoints."""
+    return {
+        "status": "healthy",
+        "service": "Supply Chain Document Automation",
+        "endpoints": {
+            "upload": "/supply-chain/upload",
+            "status": "/supply-chain/status/{document_id}",
+            "documents": "/supply-chain/documents",
+            "approve": "/supply-chain/approve/{document_id}",
+            "reject": "/supply-chain/reject/{document_id}",
+        },
+        "document_count": len(document_status_store),
+    }
+
 
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
@@ -1939,4 +1958,251 @@ async def compare_vendor_rfqs(
     except Exception as exc:
         logger.error("[VENDOR-COMPARE] Unexpected error: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error comparing vendor RFQs: {str(exc)}")
+
+
+# ----------------- Supply Chain Document Automation -----------------
+
+# In-memory storage for document processing status (in production, use Redis or database)
+document_status_store: Dict[str, Dict] = {}
+
+@app.post("/supply-chain/upload")
+async def upload_supply_chain_documents(
+    files: List[UploadFile] = File(...),
+):
+    """Upload supply chain documents (PO, BoL, GRN, Invoice, etc.) for processing."""
+    try:
+        if not files:
+            raise HTTPException(status_code=400, detail="No files provided")
+        
+        allowed_types = {
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword",
+        }
+        
+        max_size = 20 * 1024 * 1024  # 20MB
+        
+        document_ids = []
+        for file in files:
+            if file.content_type not in allowed_types:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File {file.filename} must be PDF or Word document"
+                )
+            
+            file_bytes = await file.read()
+            if len(file_bytes) > max_size:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File {file.filename} exceeds 20MB limit"
+                )
+            
+            # Generate document ID
+            import uuid
+            doc_id = f"DOC-{uuid.uuid4().hex[:8].upper()}"
+            
+            # Store initial status
+            document_status_store[doc_id] = {
+                "id": doc_id,
+                "filename": file.filename,
+                "status": "uploaded",
+                "stage": 1,
+                "progress": 0,
+                "created_at": datetime.now().isoformat(),
+                "file_size": len(file_bytes),
+            }
+            
+            # Start async processing
+            import asyncio
+            asyncio.create_task(process_supply_chain_document(doc_id, file_bytes, file.content_type))
+            
+            document_ids.append(doc_id)
+        
+        return JSONResponse({
+            "success": True,
+            "document_ids": document_ids,
+            "message": f"Uploaded {len(document_ids)} document(s). Processing started."
+        })
+    
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("[SUPPLY-CHAIN] Upload error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error uploading documents: {str(exc)}")
+
+
+async def process_supply_chain_document(doc_id: str, file_bytes: bytes, mime_type: str):
+    """Process a supply chain document through the 5-stage pipeline."""
+    try:
+        # Stage 1: Intake (already done)
+        update_status(doc_id, "intake", 1, 20)
+        
+        # Stage 2: AI Parsing & Normalization
+        await asyncio.sleep(1)  # Simulate processing
+        update_status(doc_id, "parsing", 2, 40)
+        
+        # Extract document data using Gemini
+        extraction_prompt = (
+            "You are an expert document analyst specializing in supply chain documents. "
+            "Analyze the attached document and extract all relevant information.\n\n"
+            "The document could be a Purchase Order (PO), Bill of Lading (BoL), "
+            "Goods Receipt Note (GRN), Invoice, Packing List, or Quality Certificate.\n\n"
+            "Extract the following information in JSON format:\n"
+            "{\n"
+            '  "document_type": "PO|BoL|GRN|Invoice|Packing List|QC Cert",\n'
+            '  "supplier": "supplier name",\n'
+            '  "order_number": "PO/order number if available",\n'
+            '  "order_date": "date in YYYY-MM-DD format",\n'
+            '  "total_amount": "amount as number",\n'
+            '  "currency": "currency code (INR, USD, etc.)",\n'
+            '  "line_items": [\n'
+            '    {\n'
+            '      "description": "item description",\n'
+            '      "quantity": number,\n'
+            '      "unit_price": number,\n'
+            '      "total": number\n'
+            '    }\n'
+            '  ],\n'
+            '  "delivery_address": "address if available",\n'
+            '  "payment_terms": "payment terms if available",\n'
+            '  "confidence": "high|medium|low based on document clarity"\n'
+            "}\n\n"
+            "Output ONLY valid JSON, no markdown, no explanations."
+        )
+        
+        extracted_data = None
+        try:
+            response_text = inspector.client.chat(file_bytes, mime_type, extraction_prompt)
+            # Parse JSON response
+            import json
+            response_text = response_text.strip()
+            if response_text.startswith("```json"):
+                response_text = response_text[7:]
+            if response_text.startswith("```"):
+                response_text = response_text[3:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+            response_text = response_text.strip()
+            
+            extracted_data = json.loads(response_text)
+            update_status(doc_id, "parsing", 2, 60, extracted_data=extracted_data)
+        except Exception as parse_exc:
+            logger.error(f"[SUPPLY-CHAIN] Parsing error for {doc_id}: {parse_exc}")
+            update_status(doc_id, "parsing", 2, 60, error=str(parse_exc))
+        
+        # Stage 3: Confidence & Human Review
+        await asyncio.sleep(0.5)
+        update_status(doc_id, "review", 3, 70)
+        
+        # Stage 4: Matching (simplified - in production, match against existing POs)
+        await asyncio.sleep(0.5)
+        update_status(doc_id, "matching", 4, 85)
+        
+        # Stage 5: ERP Update
+        await asyncio.sleep(0.5)
+        update_status(doc_id, "completed", 5, 100)
+        
+    except Exception as exc:
+        logger.error(f"[SUPPLY-CHAIN] Processing error for {doc_id}: {exc}", exc_info=True)
+        update_status(doc_id, "error", 0, 0, error=str(exc))
+
+
+def update_status(doc_id: str, status: str, stage: int, progress: int, extracted_data: Optional[Dict] = None, error: Optional[str] = None):
+    """Update document processing status."""
+    if doc_id not in document_status_store:
+        return
+    
+    document_status_store[doc_id].update({
+        "status": status,
+        "stage": stage,
+        "progress": progress,
+        "updated_at": datetime.now().isoformat(),
+    })
+    
+    if extracted_data:
+        document_status_store[doc_id]["extracted_data"] = extracted_data
+    
+    if error:
+        document_status_store[doc_id]["error"] = error
+
+
+@app.get("/supply-chain/status/{document_id}")
+async def get_document_status(document_id: str):
+    """Get real-time processing status for a document."""
+    if document_id not in document_status_store:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return JSONResponse(document_status_store[document_id])
+
+
+@app.get("/supply-chain/documents")
+async def get_all_documents(
+    status: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """Get all documents with optional filtering."""
+    try:
+        documents = list(document_status_store.values())
+        
+        if status:
+            documents = [d for d in documents if d.get("status") == status]
+        
+        # Sort by created_at descending
+        documents.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        
+        return JSONResponse({
+            "success": True,
+            "documents": documents[offset:offset + limit],
+            "total": len(documents),
+            "limit": limit,
+            "offset": offset,
+        })
+    except Exception as exc:
+        logger.error("[SUPPLY-CHAIN] Error getting documents: %s", exc, exc_info=True)
+        # Return empty list on error instead of failing
+        return JSONResponse({
+            "success": True,
+            "documents": [],
+            "total": 0,
+            "limit": limit,
+            "offset": offset,
+        })
+
+
+@app.post("/supply-chain/approve/{document_id}")
+async def approve_document(document_id: str):
+    """Approve a document for payment processing."""
+    if document_id not in document_status_store:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    document_status_store[document_id].update({
+        "status": "approved",
+        "approved_at": datetime.now().isoformat(),
+    })
+    
+    return JSONResponse({
+        "success": True,
+        "message": "Document approved",
+        "document": document_status_store[document_id],
+    })
+
+
+@app.post("/supply-chain/reject/{document_id}")
+async def reject_document(document_id: str, reason: str = Form("")):
+    """Reject a document."""
+    if document_id not in document_status_store:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    document_status_store[document_id].update({
+        "status": "rejected",
+        "rejected_at": datetime.now().isoformat(),
+        "rejection_reason": reason,
+    })
+    
+    return JSONResponse({
+        "success": True,
+        "message": "Document rejected",
+        "document": document_status_store[document_id],
+    })
 

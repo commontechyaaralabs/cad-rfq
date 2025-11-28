@@ -1,52 +1,45 @@
 # CAD RFQ Backend API
 
-FastAPI backend for CAD drawing analysis and welding inspection using Google Gemini AI.
+FastAPI backend for CAD drawing analysis, welding inspection, and supply chain document automation using Google Gemini AI.
+
+## 🌐 Deployed Service
+
+**Production URL:** https://logistics-manufacturing-api-1033805860980.us-east4.run.app
+
+**API Documentation:** https://logistics-manufacturing-api-1033805860980.us-east4.run.app/docs
 
 ## 📁 Project Structure
 
 ```
 backend/
-├── api.py                 # Main FastAPI application
+├── api.py                 # Main FastAPI application with all endpoints
 ├── main.py                # Welding inspector implementation
 ├── run_server.py          # Development server runner
 ├── run_production.py      # Production server runner
 ├── requirements.txt       # Python dependencies
 ├── env.example           # Environment variables template
 ├── Dockerfile            # Docker container configuration
-├── docker-compose.yml    # Docker Compose configuration
-├── cloudbuild.yaml       # Google Cloud Build configuration
 ├── .dockerignore         # Docker ignore patterns
 ├── .gitignore           # Git ignore patterns
 │
 ├── docs/                 # Documentation
-│   ├── DEPLOYMENT.md
-│   ├── DEPLOY_TO_CLOUDRUN.md
-│   ├── DEPLOY_WITHOUT_DOCKER.md
-│   ├── QUICK_DEPLOY_CLOUDRUN.md
-│   ├── SERVICE_ACCOUNT_SETUP.md
-│   └── ...
+│   ├── MIGRATION_TO_LOGISTICS_PROJECT.md  # Cloud project migration guide
+│   └── STRUCTURE.md      # Project structure documentation
 │
-├── scripts/              # Deployment and utility scripts
-│   ├── deploy.ps1        # PowerShell deployment script
-│   ├── deploy.bat        # Windows batch deployment
-│   ├── deploy.sh         # Linux/Mac deployment
-│   ├── deploy-cloudrun.ps1
-│   ├── quick-start.ps1   # Quick setup script
-│   ├── setup-env.ps1     # Environment setup
-│   └── cleanup.ps1      # Cleanup utility
+├── scripts/              # Deployment scripts
+│   └── deploy-gcloud.ps1 # PowerShell Cloud Run deployment
 │
-├── .venv/               # Virtual environment (not in git)
-└── uploads/             # Upload directory (runtime)
+└── uploads/              # Runtime upload directory
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.11+
-- Google Cloud Project with Vertex AI enabled
-- Service account credentials JSON file
+- Google Cloud Project: `logistics-479609`
+- Application Default Credentials (ADC) for local development
 
-### Setup
+### Local Development Setup
 
 1. **Create virtual environment:**
    ```bash
@@ -70,69 +63,49 @@ backend/
    pip install -r requirements.txt
    ```
 
-4. **Set environment variables:**
+4. **Set up Application Default Credentials:**
+   ```bash
+   gcloud auth application-default login
+   gcloud config set project logistics-479609
+   ```
+
+5. **Create .env file:**
    ```bash
    # Copy example file
    copy env.example .env
-   
-   # Edit .env with your values
-   GOOGLE_CLOUD_PROJECT=your-project-id
-   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
    ```
 
-5. **Run development server:**
+6. **Run development server:**
    ```bash
    python run_server.py
    ```
 
-Or use the quick start script:
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\quick-start.ps1
-```
-
-## 📚 Documentation
-
-All documentation is available in the `docs/` directory:
-
-- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - General deployment guide
-- **[DEPLOY_TO_CLOUDRUN.md](docs/DEPLOY_TO_CLOUDRUN.md)** - Google Cloud Run deployment
-- **[QUICK_DEPLOY_CLOUDRUN.md](docs/QUICK_DEPLOY_CLOUDRUN.md)** - Quick Cloud Run deployment
-- **[SERVICE_ACCOUNT_SETUP.md](docs/SERVICE_ACCOUNT_SETUP.md)** - Service account configuration
-- **[RUN_SCRIPTS.md](docs/RUN_SCRIPTS.md)** - How to run PowerShell scripts
-
-## 🛠️ Scripts
-
-All deployment and utility scripts are in the `scripts/` directory:
-
-- **deploy.ps1** - Full-featured PowerShell deployment script
-- **quick-start.ps1** - Fastest way to get started
-- **deploy-cloudrun.ps1** - Cloud Run specific deployment
-- **setup-env.ps1** - Environment variable setup
-
-## 🐳 Docker
-
-### Build and Run
-```bash
-docker build -t cad-rfq-api .
-docker run -p 8000:8000 \
-  -e GOOGLE_CLOUD_PROJECT=your-project-id \
-  -e GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json \
-  -v $(pwd)/credentials.json:/app/credentials.json:ro \
-  cad-rfq-api
-```
-
-### Docker Compose
-```bash
-docker-compose up -d
-```
+   Server runs at: http://localhost:8000
 
 ## 🌐 API Endpoints
 
-- `GET /` - Health check
-- `GET /health` - Health status
-- `POST /inspect` - Upload CAD drawing for inspection
+### Health & Status
+- `GET /` - Root endpoint with welcome message
+- `GET /health` - Health check status
+
+### Welding Analysis
+- `POST /inspect` - Upload CAD drawing for welding inspection
 - `POST /analyze` - Alias for /inspect
-- `GET /docs` - Interactive API documentation (Swagger UI)
+
+### RFQ Comparison
+- `POST /compare-rfq` - Compare multiple vendor RFQ documents
+- `POST /rfq-cad-compare` - Compare RFQ requirements with CAD drawing
+
+### Supply Chain Document Automation
+- `POST /supply-chain/upload` - Upload documents for processing
+- `GET /supply-chain/status/{document_id}` - Get document processing status
+- `GET /supply-chain/documents` - Get all documents
+- `POST /supply-chain/approve/{document_id}` - Approve document processing
+- `POST /supply-chain/reject/{document_id}` - Reject document
+
+### Interactive Documentation
+- `GET /docs` - Swagger UI (interactive API documentation)
+- `GET /redoc` - ReDoc API documentation
 
 ## 🔧 Configuration
 
@@ -140,10 +113,38 @@ docker-compose up -d
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `GOOGLE_CLOUD_PROJECT` | GCP Project ID | Yes |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Path to service account JSON | Yes |
+| `GOOGLE_CLOUD_PROJECT` | GCP Project ID (`logistics-479609`) | Yes |
 | `PORT` | Server port (default: 8000) | No |
 | `HOST` | Server host (default: 0.0.0.0) | No |
+
+## 🚢 Deployment to Cloud Run
+
+### Using Deployment Script
+```powershell
+cd backend
+.\scripts\deploy-gcloud.ps1
+```
+
+### Manual Deployment
+```bash
+# Set project
+gcloud config set project logistics-479609
+
+# Build and deploy
+gcloud builds submit --tag us-east4-docker.pkg.dev/logistics-479609/cloud-run-source-deploy/logistics-manufacturing-api
+
+# Deploy to Cloud Run
+gcloud run deploy logistics-manufacturing-api \
+  --image us-east4-docker.pkg.dev/logistics-479609/cloud-run-source-deploy/logistics-manufacturing-api \
+  --platform managed \
+  --region us-east4 \
+  --allow-unauthenticated \
+  --port 8000 \
+  --memory 2Gi \
+  --cpu 2 \
+  --timeout 300 \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=logistics-479609
+```
 
 ## 📦 Dependencies
 
@@ -157,22 +158,23 @@ docker-compose up -d
 
 See `requirements.txt` for complete list.
 
-## 🚢 Deployment
+## 📚 Documentation
 
-### Google Cloud Run
+- **[MIGRATION_TO_LOGISTICS_PROJECT.md](docs/MIGRATION_TO_LOGISTICS_PROJECT.md)** - Cloud project migration guide
+- **[STRUCTURE.md](docs/STRUCTURE.md)** - Detailed project structure
 
-See detailed instructions in [docs/DEPLOY_TO_CLOUDRUN.md](docs/DEPLOY_TO_CLOUDRUN.md)
+## 🔍 Testing
 
-Quick deploy:
+### Health Check
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\deploy-cloudrun.ps1
+Invoke-WebRequest -Uri "https://logistics-manufacturing-api-1033805860980.us-east4.run.app/health" -UseBasicParsing
 ```
 
-## 📝 License
+### Local Testing
+```powershell
+# Start server
+python run_server.py
 
-[Add your license here]
-
-## 🤝 Contributing
-
-[Add contribution guidelines here]
-
+# Test health
+curl http://localhost:8000/health
+```
