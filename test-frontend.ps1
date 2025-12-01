@@ -61,7 +61,7 @@ if (Test-Path "node_modules") {
 Write-Host "`n[3/4] Checking API configuration..." -ForegroundColor Yellow
 if (Test-Path "utils\api.ts") {
     $apiContent = Get-Content "utils\api.ts" -Raw
-    if ($apiContent -match "welding-analyzer-api-773717965404") {
+    if ($apiContent -match "logistics-manufacturing-api-1033805860980") {
         Write-Host "  ✓ API configuration found" -ForegroundColor Green
         Write-Host "    API URL configured correctly" -ForegroundColor Gray
         $testsPassed++

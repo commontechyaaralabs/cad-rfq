@@ -2,7 +2,7 @@
 # Usage: .\test-backend.ps1
 
 param(
-    [string]$ApiUrl = "https://welding-analyzer-api-773717965404.us-east4.run.app"
+    [string]$ApiUrl = "https://logistics-manufacturing-api-1033805860980.us-east4.run.app"
 )
 
 Write-Host "`n========================================" -ForegroundColor Cyan

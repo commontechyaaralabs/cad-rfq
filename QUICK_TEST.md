@@ -24,18 +24,18 @@ Quick commands to verify backend and frontend are working.
 
 **Health Check:**
 ```powershell
-curl https://welding-analyzer-api-773717965404.us-east4.run.app/health
+curl https://logistics-manufacturing-api-1033805860980.us-east4.run.app/health
 ```
 
 **Or in PowerShell:**
 ```powershell
-Invoke-WebRequest -Uri "https://welding-analyzer-api-773717965404.us-east4.run.app/health" -UseBasicParsing
+Invoke-WebRequest -Uri "https://logistics-manufacturing-api-1033805860980.us-east4.run.app/health" -UseBasicParsing
 ```
 
 **Expected:** `{"status":"healthy","service":"Welding Inspector API"}`
 
 **API Docs:**
-Open: https://welding-analyzer-api-773717965404.us-east4.run.app/docs
+Open: https://logistics-manufacturing-api-1033805860980.us-east4.run.app/docs
 
 ---
 
@@ -78,7 +78,7 @@ http://localhost:3000
 
 ### Backend not responding?
 ```powershell
-gcloud run services describe welding-analyzer-api --region us-east4
+gcloud run services describe logistics-manufacturing-api --region us-east4 --project logistics-479609
 ```
 
 ### Frontend build fails?

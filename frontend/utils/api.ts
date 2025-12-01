@@ -6,10 +6,23 @@
  * or defaults to the deployed Cloud Run service.
  */
 
-// Get API URL from environment variable or use the deployed service URL
+// Get API URL from environment variable or use appropriate default
+// In development, default to localhost; in production, use Cloud Run
+const getDefaultApiUrl = () => {
+  // Check if we're in development mode
+  if (typeof window !== 'undefined') {
+    // Client-side: check if we're on localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8000';
+    }
+  }
+  // Server-side or production: use Cloud Run
+  return "https://logistics-manufacturing-api-1033805860980.us-east4.run.app";
+};
+
 export const API_BASE_URL = 
   process.env.NEXT_PUBLIC_API_URL || 
-  "https://welding-analyzer-api-773717965404.us-east4.run.app";
+  getDefaultApiUrl();
 
 /**
  * Helper function to build API endpoint URLs

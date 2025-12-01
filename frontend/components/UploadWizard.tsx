@@ -68,6 +68,8 @@ export const UploadWizard = ({ files, onFilesChange, isDetecting, onDetect, visi
       newIndices.forEach(idx => updatedVisible.add(idx));
       onVisibleFilesChange(updatedVisible);
     }
+    // Reset input value so the same file can be selected again
+    e.target.value = '';
   };
 
   const removeFile = (index: number) => {
@@ -151,6 +153,16 @@ export const UploadWizard = ({ files, onFilesChange, isDetecting, onDetect, visi
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-base font-semibold text-gray-900">Uploaded Documents ({files.length})</h3>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => document.getElementById('wizard-add-file-input')?.click()}
+                className="text-sm text-[#5332FF] hover:text-[#5332FF]/80 font-medium transition-colors flex items-center gap-1.5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Files
+              </button>
             <button
               onClick={() => {
                 onFilesChange([]);
@@ -161,6 +173,16 @@ export const UploadWizard = ({ files, onFilesChange, isDetecting, onDetect, visi
               Clear All
             </button>
           </div>
+          </div>
+          {/* Hidden file input for Add Files button */}
+          <input
+            id="wizard-add-file-input"
+            type="file"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="hidden"
+            multiple
+            onChange={handleFileInput}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {files.map((file, index) => {
               const isVisible = visibleFiles.has(index);

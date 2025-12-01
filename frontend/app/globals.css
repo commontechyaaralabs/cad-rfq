@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
+/* YAARALABS Brand Colors */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Colors */
+  --brand-black: #010101;
+  --brand-magenta: #B90ABD;
+  --brand-light-gray: #D6D9D8;
+  --brand-purple: #5332FF;
+  --brand-white: #FFFFFF;
+  --brand-gray: #939394;
+
+  /* Theme Variables - Light Mode (Default) */
+  --background: #FFFFFF;
+  --background-secondary: rgba(214, 217, 216, 0.25);
+  --foreground: #010101;
+  --foreground-secondary: #939394;
+  --accent: #B90ABD;
+  --accent-secondary: #5332FF;
+  --border: #D6D9D8;
+  --card: #FFFFFF;
 }
 
 @theme inline {
@@ -12,19 +28,136 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark Theme */
+body.dark-theme {
+  --background: #010101;
+  --background-secondary: #1a1a1a;
+  --foreground: #FFFFFF;
+  --foreground-secondary: #939394;
+  --accent: #B90ABD;
+  --accent-secondary: #5332FF;
+  --border: #2a2a2a;
+  --card: #111111;
 }
 
+/* Apply theme to body */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Override common background colors for dark theme */
+body.dark-theme .bg-white {
+  background-color: var(--card) !important;
+}
+
+body.dark-theme .bg-gray-50 {
+  background-color: var(--background-secondary) !important;
+}
+
+body.dark-theme .bg-gray-100 {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-theme .border-gray-100,
+body.dark-theme .border-gray-200 {
+  border-color: var(--border) !important;
+}
+
+body.dark-theme .text-gray-900 {
+  color: var(--foreground) !important;
+}
+
+body.dark-theme .text-gray-700 {
+  color: #e5e5e5 !important;
+}
+
+body.dark-theme .text-gray-600 {
+  color: var(--foreground-secondary) !important;
+}
+
+body.dark-theme .text-gray-500 {
+  color: #888888 !important;
+}
+
+body.dark-theme .text-gray-400 {
+  color: #666666 !important;
+}
+
+/* Cards and panels in dark mode */
+body.dark-theme .shadow-lg,
+body.dark-theme .shadow-md,
+body.dark-theme .shadow-sm {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Input fields in dark mode */
+body.dark-theme input,
+body.dark-theme textarea,
+body.dark-theme select {
+  background-color: #1a1a1a !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: #666666 !important;
+}
+
+/* Tables in dark mode */
+body.dark-theme table {
+  background-color: var(--card) !important;
+}
+
+body.dark-theme th {
+  background-color: #1a1a1a !important;
+  color: var(--foreground) !important;
+}
+
+body.dark-theme td {
+  border-color: var(--border) !important;
+}
+
+body.dark-theme tr:hover {
+  background-color: #1a1a1a !important;
+}
+
+/* Hover states in dark mode */
+body.dark-theme .hover\:bg-gray-50:hover {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-theme .hover\:bg-gray-100:hover {
+  background-color: #2a2a2a !important;
+}
+
+/* Dropdown menus in dark mode */
+body.dark-theme [class*="rounded-xl"][class*="shadow"] {
+  background-color: var(--card) !important;
+}
+
+/* Main content wrapper for dark mode */
+body.dark-theme main {
+  background-color: var(--background) !important;
+}
+
+/* Dark theme scrollbar */
+body.dark-theme::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+body.dark-theme::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+}
+
+body.dark-theme::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+/* Animations */
 @keyframes blink {
   0%, 100% {
     opacity: 1;
@@ -37,4 +170,117 @@ body {
 .blink-emoji {
   animation: blink 1.5s ease-in-out infinite;
   display: inline-block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--brand-magenta);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--brand-magenta);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar - Light theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Theme-aware utility classes */
+.bg-theme {
+  background-color: var(--background);
+}
+
+.bg-theme-secondary {
+  background-color: var(--background-secondary);
+}
+
+.text-theme {
+  color: var(--foreground);
+}
+
+.text-theme-secondary {
+  color: var(--foreground-secondary);
+}
+
+.border-theme {
+  border-color: var(--border);
+}
+
+.bg-card-theme {
+  background-color: var(--card);
+}
+
+.accent-theme {
+  color: var(--accent);
+}
+
+.bg-accent-theme {
+  background-color: var(--accent);
+}
+
+/* Focus states with brand colors */
+*:focus-visible {
+  outline: 2px solid var(--brand-magenta);
+  outline-offset: 2px;
+}
+
+/* Selection color */
+::selection {
+  background-color: var(--brand-magenta);
+  color: var(--brand-white);
 }

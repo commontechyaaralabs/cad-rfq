@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CAD RFQ Frontend
 
-## Getting Started
+Next.js frontend for the CAD RFQ Platform - AI-powered document analysis and comparison tools.
 
-First, run the development server:
+## 🌐 Backend API
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Production URL:** https://logistics-manufacturing-api-1033805860980.us-east4.run.app
+
+**API Documentation:** https://logistics-manufacturing-api-1033805860980.us-east4.run.app/docs
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Development Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Configure API URL (optional):**
+   
+   Create `.env.local` for local backend development:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   ```
+   
+   Or for production backend:
+   ```env
+   NEXT_PUBLIC_API_URL=https://logistics-manufacturing-api-1033805860980.us-east4.run.app
+   ```
+
+3. **Run development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open browser:**
+   ```
+   http://localhost:3000
+   ```
+
+## 📁 Project Structure
+
+```
+frontend/
+├── app/                          # Next.js App Router pages
+│   ├── layout.tsx               # Root layout
+│   ├── page.tsx                 # Home page (redirects)
+│   ├── vendor-rfq-comparison/   # Vendor RFQ comparison tool
+│   ├── rfq-cad-comparison/      # RFQ vs CAD comparison tool
+│   ├── welding-analyzer/        # Welding specification analyzer
+│   └── supply-chain-document-automation/
+│       ├── page.tsx             # Supply chain automation UI
+│       └── DOCUMENTATION.md     # Detailed module docs
+│
+├── components/                   # React components
+│   ├── Header.tsx               # App header with navigation
+│   ├── UploadWizard.tsx         # File upload wizard
+│   ├── VendorCard.tsx           # Vendor profile cards
+│   ├── ComparisonGrid.tsx       # Side-by-side comparison
+│   ├── KPIMetrics.tsx           # KPI metric cards
+│   ├── TailSpinner.tsx          # Loading spinner
+│   └── supply-chain/            # Supply chain components
+│       ├── IntakeStage.tsx
+│       ├── ParsingStage.tsx
+│       ├── ReviewStage.tsx
+│       ├── MatchingStage.tsx
+│       └── Pipeline.tsx
+│
+├── utils/                        # Utility functions
+│   ├── api.ts                   # API URL configuration
+│   ├── supplyChainApi.ts        # Supply chain API calls
+│   ├── formatBytes.ts           # File size formatting
+│   └── previewUtils.ts          # File preview utilities
+│
+└── public/                       # Static assets
+    └── yaralabs_logo.png        # Company logo
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Vendor RFQ Comparison
+- Upload multiple vendor RFQ documents
+- AI-powered extraction and comparison
+- Side-by-side vendor analysis
+- Recommendations and insights
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. RFQ – CAD Comparison
+- Compare RFQ requirements with CAD drawings
+- Visual annotation of matches/mismatches
+- Categorized specification analysis
 
-## Learn More
+### 3. Welding Analyzer
+- Extract welding specifications from drawings
+- Compliance checking
+- Structured data output
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Supply Chain Document Automation
+- 4-stage document processing pipeline
+- Real-time status tracking
+- AI parsing and matching
+- Business-focused dashboard
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📦 Dependencies
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Next.js 16** - React framework
+- **React 19** - UI library
+- **Tailwind CSS** - Styling
+- **TypeScript** - Type safety
 
-## Deploy on Vercel
+## 🔧 Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📚 Documentation
+
+- **[Supply Chain Documentation](app/supply-chain-document-automation/DOCUMENTATION.md)** - Detailed supply chain module docs

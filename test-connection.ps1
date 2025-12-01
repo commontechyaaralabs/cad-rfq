@@ -8,12 +8,12 @@ Write-Host "========================================`n" -ForegroundColor Cyan
 # Test Backend (Deployed)
 Write-Host "1. Testing Deployed Backend..." -ForegroundColor Yellow
 try {
-    $backendUrl = "https://welding-analyzer-api-773717965404.us-east4.run.app/health"
+    $backendUrl = "https://logistics-manufacturing-api-1033805860980.us-east4.run.app/health"
     $response = Invoke-RestMethod -Uri $backendUrl -TimeoutSec 10 -ErrorAction Stop
     Write-Host "   ✅ Backend is healthy!" -ForegroundColor Green
     Write-Host "   Status: $($response.status)" -ForegroundColor Green
     Write-Host "   Service: $($response.service)" -ForegroundColor Green
-    Write-Host "   URL: https://welding-analyzer-api-773717965404.us-east4.run.app" -ForegroundColor Gray
+    Write-Host "   URL: https://logistics-manufacturing-api-1033805860980.us-east4.run.app" -ForegroundColor Gray
 } catch {
     Write-Host "   ❌ Backend connection failed!" -ForegroundColor Red
     Write-Host "   Error: $_" -ForegroundColor Red
@@ -24,7 +24,7 @@ Write-Host ""
 # Test Backend API Docs
 Write-Host "2. Testing Backend API Documentation..." -ForegroundColor Yellow
 try {
-    $docsUrl = "https://welding-analyzer-api-773717965404.us-east4.run.app/docs"
+    $docsUrl = "https://logistics-manufacturing-api-1033805860980.us-east4.run.app/docs"
     $docsResponse = Invoke-WebRequest -Uri $docsUrl -TimeoutSec 10 -ErrorAction Stop
     if ($docsResponse.StatusCode -eq 200) {
         Write-Host "   ✅ API Documentation is accessible!" -ForegroundColor Green
@@ -55,7 +55,7 @@ Write-Host "  Test Complete" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Next Steps:" -ForegroundColor Yellow
-Write-Host "1. Open API Docs: https://welding-analyzer-api-773717965404.us-east4.run.app/docs" -ForegroundColor White
+Write-Host "1. Open API Docs: https://logistics-manufacturing-api-1033805860980.us-east4.run.app/docs" -ForegroundColor White
 Write-Host "2. Start Frontend: cd frontend && npm run dev" -ForegroundColor White
 Write-Host "3. Open Frontend: http://localhost:3000" -ForegroundColor White
 Write-Host "4. Test features in browser with DevTools open (F12)" -ForegroundColor White
