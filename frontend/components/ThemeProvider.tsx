@@ -61,13 +61,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    // Check for saved theme preference or system preference
+    // Check for saved theme preference only (default to light theme)
     const savedTheme = localStorage.getItem('yaaralabs-theme') as ThemeName | null;
     if (savedTheme && themes[savedTheme]) {
       setThemeName(savedTheme);
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setThemeName('dark');
     }
+    // Note: We intentionally don't check system preference - light theme is the default
   }, []);
 
   useEffect(() => {
